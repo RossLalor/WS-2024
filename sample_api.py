@@ -15,6 +15,24 @@ class GetProducts(Resource):
 api.add_resource(GetProducts, '/getProducts')
 
 
+class GetTitles(Resource):
+    def get(self):
+        return {'id': '1221'}
+        
+ 
+             
+api.add_resource(GetTitles, '/getTitles')
+
+
+class InsertProducts(Resource):
+    def get(self):
+        return {'id': '1221'}
+        
+ 
+             
+api.add_resource(GetProducts, '/insertProduct')
+
+
             
 if __name__ == '__main__':
     app.run(debug=True)
