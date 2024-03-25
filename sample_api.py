@@ -30,18 +30,17 @@ class Query(graphene.ObjectType):
     def resolve_product(root, info):
         data = requests.get('http://127.0.0.1:5000/getProducts')
         json_content = json.loads(data.text)
-        
-        # Extracting titles from documents
-        titles = [item.get('Title') for item in json_content]
-        
-        # Creating a list of Product Objects
-        products = [Product(title=title) for title in titles]
-        
+        # Extracting titles from all documents
+        pName = [item.get('P-name') for item in json_content]
+        # Creating a list of Product objects
+        products = [Product(title=pName) for pName in pName]
         return products
 
 
 class GetTitles(Resource):
     def get(self):
+
+        
         schema = graphene.Schema(query=Query)
         query = """
                 {
@@ -49,12 +48,8 @@ class GetTitles(Resource):
                 title
                 }
                 }
-        """
-        
-        # Execute the GraphQL query
+            """
         result = schema.execute(query)
-        
-        # Return the data as JSON
         return result.data
     
 api.add_resource(GetTitles, '/getTitles')
@@ -76,29 +71,35 @@ class insertProducts(Resource):
         #Extract data from the request
         product_id = data.get('ProductId')
         title = data.get('Title')
-        price = data.get('Price')
-        quantity = data.get('Quantity')
+        cost = data.get('Cost')
         
         # Validate the request data
-        if not all([product_id, title, price, quantity]):
+        if not all([product_id, title, cost]):
             return {"Error": "Missing required data"}, 400
         
         # Connect to MongoDB and insert the product data
         client = MongoClient("mongodb://root:example@localhost:27017/")
-        db = client.products
-        collection = db.product_data
+        db = client.sales
+        collection = db.sales_data
         
-        new_record = {"ProductId": product_id, "Title": title, "Price": price, "Quantity": quantity}
+        new_record = {"ProductId": product_id, "Title": title, "Cost": cost}
         collection.insert_one(new_record)
         
         return {"status": "inserted"}, 201
 
 api.add_resource(insertProducts, '/insertProducts')
 
-class HelloWorld(Resource):
+class APIDescription(Resource):
     def get(self):
-        return {'hello': 'world'}
-api.add_resource(HelloWorld, '/')
+        description = { 
+            "/getProducts": "GET request to retrieve a list of all products from the mongo database.", 
+            "/getTitles": "GET request to retrieve titles of all products using GraphQL query.", 
+            "/insertProduct?api_key=<YOUR_API_KEY>": "POST request to insert a new product into the database. Requires a valid API key.", 
+            "/": "Description page containing a list of the API URLs that are available and a brief description of how they work." 
+        } 
+        return jsonify(description)
+    
+api.add_resource(APIDescription, '/')
 
 if __name__ == '__main__':
     app.run(debug=True)
