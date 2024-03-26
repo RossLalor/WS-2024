@@ -31,7 +31,7 @@ class Query(graphene.ObjectType):
         data = requests.get('http://127.0.0.1:5000/getProducts')
         json_content = json.loads(data.text)
         # Extracting titles from all documents
-        pName = [item.get('P-name') for item in json_content]
+        pName = [item.get('Title') for item in json_content]
         # Creating a list of Product objects
         products = [Product(title=pName) for pName in pName]
         return products
